@@ -1,6 +1,6 @@
 import httpx
 import base64
-from github_auth import get_installation_access_token
+from api.github_auth import get_installation_access_token
 from typing import Dict, List, Any
 import asyncio
 

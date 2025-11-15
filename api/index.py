@@ -4,16 +4,16 @@ import re # Regex
 import asyncio
 
 # Importing from directory
-import github_client
-import profiler
+import api.github_client as github_client
+import api.profiler as profiler
 
 from fastapi.middleware.cors import CORSMiddleware
 
 # Basemodels
-from models import Repo_Input, Repo_Output
+from api.models import Repo_Input, Repo_Output
 
 # Summary generator
-from summary import generate_summary
+from api.summary import generate_summary
 
 
 # Creating an Fastapi instance
@@ -145,6 +145,3 @@ async def analyze_repo(repo_input: Repo_Input):
     print(f"Analysis for {repo_name} complete.")
     return report
 
-
-#if __name__ == "__main__":
-#   uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
