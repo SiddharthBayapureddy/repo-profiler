@@ -60,5 +60,8 @@ class Repo_Output(BaseModel):
     issues : Optional[IssueHealth] = None
     health_score : float
 
+    # Dependecies
+    dependencies: List[DependencyAnalysis] = []
+
     # Summary 
     summary: str

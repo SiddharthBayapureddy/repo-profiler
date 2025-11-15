@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepoProfiler Agent</title>
+    <!-- 1. Load Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Configure Tailwind with the new Color Palette -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Our new palette from the animation
+                        'dark-bg': '#333333',
+                        'light-text': '#f5f5f5',
+                        'card-bg': '#404040', // Slightly lighter than the bg
+                        'border-dark': '#555555',
+                        'accent': '#f5f5f5', // Main accent is the light text
+                        'accent-text': '#333333', // Text for on-accent buttons
+                        // Error colors
+                        'danger-bg': '#6b2112',
+                        'danger-text': '#fecaca',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 3. Custom styles for the new loader -->
+    <style>
+        /* Use a modern, clean font */
+        html, body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100%;
+        }
+
+        /* --- This is the new Loader Animation --- */
+        /* Wrapper to center the 112x112 container */
+        .animation-container {
+            width: 112px;
+            height: 112px;
+            position: relative;
+        }
+
+        /* Common styles for all 3 boxes */
+        .box1, .box2, .box3 {
+            border: 16px solid #f5f5f5;
+            box-sizing: border-box;
+            position: absolute;
+            display: block;
+        }
+
+        /* Initial state & animation for box 1 */
+        .box1 {
+            width: 112px;
+            height: 48px;
+            margin-top: 64px;
+            margin-left: 0px;
+            animation: anime1 4s 0s forwards ease-in-out infinite;
+        }
+
+        /* Initial state & animation for box 2 */
+        .box2 {
+            width: 48px;
+            height: 48px;
+            margin-top: 0px;
+            margin-left: 0px;
+            animation: anime2 4s 0s forwards ease-in-out infinite;
+        }
+
+        /* Initial state & animation for box 3 */
+        .box3 {
+            width: 48px;
+            height: 48px;
+            margin-top: 0px;
+            margin-left: 64px;
+            animation: anime3 4s 0s forwards ease-in-out infinite;
+        }
+        
+        /* Keyframes for the animation */
+        @keyframes anime1 {
+            0% {
+                width: 112px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 0px;
+            }
+            12.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 0px;
+            }
+            25%, 62.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 0px;
+            }
+            75% {
+                width: 48px;
+                height: 112px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+            87.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+            100% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+        }
+        
+        @keyframes anime2 {
+            0% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+            37.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+            50% {
+                width: 112px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 0px;
+            }
+            62.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 64px;
+            }
+            100% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 64px;
+            }
+        }
+        
+        @keyframes anime3 {
+            0% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 64px;
+            }
+            12.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 0px;
+                margin-left: 64px;
+            }
+            25% {
+                width: 48px;
+                height: 112px;
+                margin-top: 0px;
+                margin-left: 64px;
+            }
+            37.5% {
+                width: 48px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 64px;
+            }
+            75% {
+                width: 48px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 64px;
+            }
+            100% {
+                width: 112px;
+                height: 48px;
+                margin-top: 64px;
+                margin-left: 0px;
+            }
+        }
+        /* --- End of Loader Animation --- */
+
+        /* Style for the collapsible <details> tag */
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            padding: 8px 0;
+            list-style: none;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary::before {
+            content: '► ';
+            font-size: 0.8em;
+            margin-right: 8px;
+            transition: transform 0.2s ease;
+        }
+        details[open] summary::before { transform: rotate(90deg); }
+        
+        pre {
+            background-color: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #f0f0f0;
+        }
+    </style>
+</head>
+
+<!-- Using our new custom colors from the Tailwind config -->
+<body class="bg-dark-bg text-light-text antialiased min-h-screen">
+
+    <div class="max-w-3xl mx-auto px-4 py-12">
+
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-light-text mb-3">
+                RepoProfiler Agent
+            </h1>
+            <p class="text-lg text-light-text/70"> <!-- Use opacity for secondary text -->
+                Get AI-powered health reports and actionable insights for any public GitHub repo.
+            </p>
+        </header>
+
+        <!-- Input Section -->
+        <main>
+            <form id="analysis-form">
+                <!-- Tab Buttons -->
+                <div class="flex mb-4 border-b border-border-dark">
+                    <button type="button" id="tab-url" class="tab-btn-active pb-2 px-1 border-b-2 border-accent text-light-text font-semibold">
+                        Analyze by URL
+                    </button>
+                    <button type="button" id="tab-owner" class="tab-btn pb-2 px-1 ml-6 text-light-text/60 font-medium">
+                        Analyze by Owner/Repo
+                    </button>
+                </div>
+
+                <!-- Input: Analyze by URL (Default) -->
+                <div id="input-url">
+                    <input type="text" id="repo-url"
+                        class="w-full p-4 bg-dark-bg border border-border-dark rounded-lg text-lg text-light-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                        placeholder="https: //github.com/fastapi/fastapi">
+                </div>
+
+                <!-- Input: Analyze by Owner/Repo (Hidden) -->
+                <div id="input-owner" class="hidden">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="repo-owner"
+                            class="flex-1 p-4 bg-dark-bg border border-border-dark rounded-lg text-lg text-light-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                            placeholder="Owner (e.g., 'psf')">
+                        <input type="text" id="repo-name"
+                            class="flex-1 p-4 bg-dark-bg border border-border-dark rounded-lg text-lg text-light-text placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent"
+                            placeholder="Repo Name (e.g., 'requests')">
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="mt-6">
+                    <button type="submit"
+                        class="w-full p-4 bg-accent rounded-lg text-lg font-bold text-accent-text shadow-lg transition-transform duration-200 hover:bg-accent/90 active:scale-95">
+                        Analyze Repository
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loader Section -->
+            <div id="loader" class="hidden flex-col items-center justify-center py-20">
+                <!-- Our new loader HTML -->
+                <div class="animation-container">
+                    <div class="box1"></div>
+                    <div class="box2"></div>
+                    <div class="box3"></div>
+                </div>
+                <p class="mt-8 text-lg text-light-text/70">Analyzing... this may take a moment.</p>
+            </div>
+
+            <!-- Error Box Section -->
+            <div id="error-box" class="hidden mt-8 p-4 bg-danger-bg border border-red-700 text-danger-text rounded-lg">
+                <!-- Error message will be injected here -->
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden mt-12 space-y-8">
+                
+                <h2 class="text-3xl font-bold text-light-text" id="report-title">
+                    Analysis Report for...
+                </h2>
+
+                <!-- Key Metrics Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Stars -->
+                    <div class="bg-card-bg p-6 rounded-lg shadow-md transition-transform hover:scale-105">
+                        <div class="text-sm font-medium text-light-text/70 mb-1">Stars</div>
+                        <div id="stat-stars" class="text-4xl font-extrabold text-light-text">...</div>
+                    </div>
+                    <!-- Forks -->
+                    <div class="bg-card-bg p-6 rounded-lg shadow-md transition-transform hover:scale-105">
+                        <div class="text-sm font-medium text-light-text/70 mb-1">Forks</div>
+                        <div id="stat-forks" class="text-4xl font-extrabold text-light-text">...</div>
+                    </div>
+                    <!-- Health Score -->
+                    <div class="bg-card-bg p-6 rounded-lg shadow-md transition-transform hover:scale-105">
+                        <div class="text-sm font-medium text-light-text/70 mb-1">Health Score</div>
+                        <div id="stat-health" class="text-4xl font-extrabold text-light-text">...</div>
+                    </div>
+                </div>
+
+                <!-- AI Summary Card -->
+                <div class="bg-card-bg p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-light-text mb-4">AI Summary & Rating</h3>
+                    <div id="summary-content" class="text-light-text/90 leading-relaxed whitespace-pre-wrap">
+                        <!-- AI summary will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Collapsible Details -->
+                <div class="bg-card-bg p-6 rounded-lg shadow-md divide-y divide-border-dark">
+                    <!-- Activity Details -->
+                    <details>
+                        <summary class="text-lg text-light-text">Activity Trends</summary>
+                        <div class="pt-4 pb-2 text-light-text/90 space-y-2">
+                            <p>Commits (avg): <strong id="activity-commits" class="text-light-text">...</strong></p>
+                            <p>New Issues (30d): <strong id="activity-new" class="text-light-text">...</strong></p>
+                            <p>Closed Issues (30d): <strong id="activity-closed" class="text-light-text">...</strong></p>
+                            <p>Last Push: <strong id="activity-push" class="text-light-text">...</strong></p>
+                        </div>
+                    </details>
+                    
+                    <!-- Issue Details -->
+                    <details>
+                        <summary class="text-lg text-light-text">Issue Health</summary>
+                        <div class="pt-4 pb-2 text-light-text/90 space-y-2">
+                            <p>Open Issues: <strong id="issues-open" class="text-light-text">...</strong></p>
+                            <p>Stale Issues (>90d): <strong id="issues-stale" class="text-light-text">...</strong></p>
+                            <p>Bug Reports: <strong id="issues-bugs" class="text-light-text">...</strong></p>
+                        </div>
+                    </details>
+
+                    <!-- Contributor Details -->
+                    <details>
+                        <summary class="text-lg text-light-text">Top 5 Contributors</summary>
+                        <ul id="contrib-list" class="pt-4 pb-2 text-light-text/90 list-disc list-inside space-y-2">
+                            <!-- Contributor list will be injected here -->
+                        </ul>
+                    </details>
+
+                    <!-- Dependency Details -->
+                    <details>
+                        <summary class="text-lg text-light-text">Dependencies</summary>
+                        <div id="dep-list" class="pt-4 pb-2 text-light-text/90 space-y-4">
+                            <!-- Dependency list will be injected here -->
+                        </div>
+                    </details>
+                    
+                    <!-- Raw JSON -->
+                    <details>
+                        <summary class="text-lg text-light-text">Raw JSON Output</summary>
+                        <div class="pt-4 pb-2">
+                            <pre id="raw-json"></pre>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 4. JavaScript Logic (No changes needed) -->
+    <script>
+        // === Get All DOM Elements ===
+        const analysisForm = document.getElementById('analysis-form');
+        const loader = document.getElementById('loader');
+        const results = document.getElementById('results');
+        const errorBox = document.getElementById('error-box');
+
+        // Tabs
+        const tabUrlBtn = document.getElementById('tab-url');
+        const tabOwnerBtn = document.getElementById('tab-owner');
+        const inputUrlDiv = document.getElementById('input-url');
+        const inputOwnerDiv = document.getElementById('input-owner');
+
+        // Inputs
+        const urlInput = document.getElementById('repo-url');
+        const ownerInput = document.getElementById('repo-owner');
+        const repoInput = document.getElementById('repo-name');
+
+        let currentAnalysisMode = 'url';
+
+        // === Tab Switching Logic ===
+        tabUrlBtn.addEventListener('click', () => {
+            currentAnalysisMode = 'url';
+            inputUrlDiv.classList.remove('hidden');
+            inputOwnerDiv.classList.add('hidden');
+            
+            tabUrlBtn.className = 'tab-btn-active pb-2 px-1 border-b-2 border-accent text-light-text font-semibold';
+            tabOwnerBtn.className = 'tab-btn pb-2 px-1 ml-6 text-light-text/60 font-medium';
+        });
+
+        tabOwnerBtn.addEventListener('click', () => {
+            currentAnalysisMode = 'owner';
+            inputUrlDiv.classList.add('hidden');
+            inputOwnerDiv.classList.remove('hidden');
+            
+            tabOwnerBtn.className = 'tab-btn-active pb-2 px-1 ml-6 border-b-2 border-accent text-light-text font-semibold';
+            tabUrlBtn.className = 'tab-btn pb-2 px-1 text-light-text/60 font-medium';
+        });
+
+        // === Main Form Submission ===
+        analysisForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            let githubUrl = '';
+            if (currentAnalysisMode === 'url') {
+                githubUrl = urlInput.value;
+            } else {
+                if (ownerInput.value && repoInput.value) {
+                    githubUrl = `https://github.com/${ownerInput.value}/${repoInput.value}`;
+                }
+            }
+
+            if (!githubUrl) {
+                displayError("Please enter a valid URL or Owner/Repo pair.");
+                return;
+            }
+
+            loader.style.display = 'flex';
+            results.style.display = 'none';
+            errorBox.style.display = 'none';
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/analyze/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repo_url: githubUrl })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || `HTTP Error ${response.status}`);
+                }
+                displayResults(data);
+
+            } catch (error) {
+                console.error("Analysis Error:", error);
+                displayError(error.message);
+            } finally {
+                loader.style.display = 'none';
+            }
+        });
+
+        function displayError(message) {
+            errorBox.textContent = `Error: ${message}`;
+            errorBox.style.display = 'block';
+            results.style.display = 'none';
+        }
+
+        function displayResults(data) {
+            results.style.display = 'block';
+            errorBox.style.display = 'none';
+
+            document.getElementById('report-title').textContent = `Analysis for ${data.repo_name}`;
+
+            // --- Stat Cards ---
+            document.getElementById('stat-stars').textContent = data.stars.toLocaleString();
+            document.getElementById('stat-forks').textContent = data.forks.toLocaleString();
+            
+            const healthEl = document.getElementById('stat-health');
+            healthEl.textContent = `${data.health_score} / 100`;
+            healthEl.classList.remove('text-green-500', 'text-yellow-500', 'text-red-500');
+            if (data.health_score >= 80) {
+                healthEl.classList.add('text-green-500');
+            } else if (data.health_score >= 50) {
+                healthEl.classList.add('text-yellow-500');
+            } else {
+                healthEl.classList.add('text-red-500');
+            }
+
+            // --- AI Summary ---
+            document.getElementById('summary-content').textContent = data.summary;
+
+            // --- Activity Details ---
+            document.getElementById('activity-commits').textContent = data.activity.commits_per_week_avg.toLocaleString();
+            document.getElementById('activity-new').textContent = data.activity.new_issues.toLocaleString();
+            document.getElementById('activity-closed').textContent = data.activity.closed_issues.toLocaleString();
+            document.getElementById('activity-push').textContent = new Date(data.last_updated).toLocaleDateString();
+
+            // --- Issue Details ---
+            document.getElementById('issues-open').textContent = data.issues.open_issues.toLocaleString();
+            document.getElementById('issues-stale').textContent = data.issues.stale_issues.toLocaleString();
+            document.getElementById('issues-bugs').textContent = data.issues.bug_issues.toLocaleString();
+            
+            // --- Contributor List ---
+            const contribList = document.getElementById('contrib-list');
+            contribList.innerHTML = '';
+            if (data.top_contributor.length > 0) {
+                data.top_contributor.forEach(c => {
+                    const li = document.createElement('li');
+                    li.textContent = `${c.username} (${c.commits.toLocaleString()} commits)`;
+                    contribList.appendChild(li);
+                });
+            } else {
+                contribList.innerHTML = '<li>No contributor data found.</li>';
+            }
+
+            // --- Dependency List ---
+            const depList = document.getElementById('dep-list');
+            depList.innerHTML = ''; 
+            if (data.dependencies && data.dependencies.length > 0) {
+                data.dependencies.forEach(report => {
+                    const fileTitle = document.createElement('h4');
+                    fileTitle.className = 'font-semibold text-light-text';
+                    fileTitle.textContent = report.file;
+                    depList.appendChild(fileTitle);
+
+                    const ul = document.createElement('ul');
+                    ul.className = 'list-disc list-inside space-y-1 pl-4';
+                    
+                    report.dependencies.forEach(pkg => {
+                        const li = document.createElement('li');
+                        li.textContent = `${pkg.name} (${pkg.version})`;
+                        ul.appendChild(li);
+                    });
+                    
+                    depList.appendChild(ul);
+                });
+            } else {
+                depList.innerHTML = '<p>No common dependency files (like requirements.txt or package.json) were found.</p>';
+            }
+
+            // --- Raw JSON ---
+            document.getElementById('raw-json').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>

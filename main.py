@@ -7,6 +7,8 @@ import asyncio
 import github_client
 import profiler
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # Basemodels
 from models import Repo_Input, Repo_Output
 
@@ -16,6 +18,14 @@ from summary import generate_summary
 
 # Creating an Fastapi instance
 app = FastAPI(title="RepoProfiler")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 
 def get_repo_name_from_url(url: str) -> str:
@@ -126,6 +136,7 @@ async def analyze_repo(repo_input: Repo_Input):
         top_contributor=contributors,
         issues=issues,
         health_score=score,
+        dependencies=dependency_analysis,
         summary=ai_summary
     )
     
@@ -134,5 +145,4 @@ async def analyze_repo(repo_input: Repo_Input):
 
 
 if __name__ == "__main__":
-    print("Starting RepoProfiler API (dev mode)...")
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
