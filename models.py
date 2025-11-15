@@ -5,7 +5,7 @@ from typing import List, Optional
 # Input Model
 # This defines the input expected from the user. Expecting a valid github repourl
 class Repo_Input(BaseModel):
-    repo_url = HttpUrl  # Checking if it's a valid url
+    repo_url: HttpUrl  # Checking if it's a valid url
 
 # Contributors Model
 class Contributor(BaseModel):
