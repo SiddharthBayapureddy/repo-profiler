@@ -47,7 +47,7 @@ async def generate_summary(data : dict) -> str:
         4. Is it good overall? or bad? Rating on a scale from 1-10 and reasoning/justification
 
 
-    Start the summary directly, without any preamble
+    Start the summary directly, without any preamble. Do it in third-person POV
 
     """
 
