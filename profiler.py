@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any
 
 # Import the exact models you defined in your models.py
-from api.models import (
+from models import (
     Dependency, 
     DependencyAnalysis, 
     ActivityTrends, 

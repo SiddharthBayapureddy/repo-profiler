@@ -4,16 +4,16 @@ import re # Regex
 import asyncio
 
 # Importing from directory
-import api.github_client as github_client
-import api.profiler as profiler
+import github_client as github_client
+import profiler as profiler
 
 from fastapi.middleware.cors import CORSMiddleware
 
 # Basemodels
-from api.models import Repo_Input, Repo_Output
+from models import Repo_Input, Repo_Output
 
 # Summary generator
-from api.summary import generate_summary
+from summary import generate_summary
 
 
 # Creating an Fastapi instance
