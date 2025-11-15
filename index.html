@@ -3,589 +3,278 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prism | Repo Analysis</title>
-    <!-- 1. Load Tailwind CSS from CDN --><script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 2. Load "Poppins" font -->
+    <title>Prism | Repo Analysis (loader fixed)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- 3. Configure Tailwind with the NEW Dark Palette (from your style.css) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        'sans': ['Poppins', 'sans-serif'] // Set Poppins as the default
-                    },
+                    fontFamily: { 'sans': ['Poppins', 'sans-serif'] },
                     colors: {
-                        // NEW DARK PALETTE from your reference style.css
-                        'dark-bg': '#0A0A0A',       /* Deeper black */
-                        'card-bg': '#131313',       /* Darker card */
-                        'light-text': '#e0e0e0',    /* Primary text */
-                        'secondary-text': '#999',   /* Secondary text */
-                        'border-light': '#222',     /* Border color */
-                        'accent-teal': '#00bfa5',   /* Vibrant teal */
-                        'accent-dark': '#008c7a',   /* Darker teal for hover */
-                        'error-bg': '#7e2424',      
-                        'error-text': '#fbdada',    
+                        'dark-bg': '#0A0A0A',
+                        'card-bg': '#131313',
+                        'light-text': '#e0e0e0',
+                        'secondary-text': '#999',
+                        'border-light': '#222',
+                        'accent-teal': '#00bfa5',
+                        'accent-dark': '#008c7a',
+                        'error-bg': '#7e2424',
+                        'error-text': '#fbdada',
                     }
                 }
             }
         }
     </script>
 
-    <!-- 4. Custom styles for loader, background, and general elements -->
     <style>
-        html {
-            height: 100%;
-        }
+        :root { --accent-teal: #00bfa5; }
+        html, body { height: 100%; }
         body {
-            /* === BACKGROUND FIX === */
-            /* Set the background color statically so it loads instantly */
-            background-color: #0A0A0A; 
+            background-color: #0A0A0A;
             color: #e0e0e0;
-            /* --- End Fix --- */
-            
             height: 100%;
             font-family: 'Poppins', 'sans-serif';
-            overflow-y: scroll; 
+            overflow-y: auto;
         }
+        #tsparticles { position: fixed; top:0; left:0; width:100%; height:100%; z-index:-3; }
+        .noise-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEVMaXH///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8GtxmUAAAAG3RSTlNBv/v5/f3g4eHm1NXX2NfY1tXV0dHRyNLKz8vPzaSjMAAAAJNJREFUeNqdzFsKwDAQA0B5/f+nXYNWEtG0JpPFCs6lIWZAt1zJvTggNkbE9fNAgA/Y2fGvWJgP2BnYd8lQOQjBRC01c809eoo0SflO1lR1eQCkGq8f3sFmNfH1TqxTcjxSBt3+B4QrgqAL/0tYASA8/vjl3/8mX5h9cNcASD88t9/8mX8w+sO4AXiPZ8QGHiZPAAAAAElFTkSuQmCC');
+            background-repeat: repeat; opacity: 0.04; z-index:-1; pointer-events:none; }
 
-        /* --- Background Effects from your style.css --- */
-        #tsparticles {
+        /* Loader overlay: covers entire viewport when active and prevents interaction */
+        .loader-backdrop {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -3; /* Furthest back */
+            inset: 0; /* top:0; right:0; bottom:0; left:0 */
+            display: none; /* toggled with .active */
+            align-items: center; justify-content: center;
+            background: rgba(6, 6, 6, 0.55); /* subtle dim */
+            backdrop-filter: blur(4px);
+            z-index: 60; /* sits above page content but below extreme UI if needed */
+            pointer-events: auto; /* blocks interaction with page while active */
         }
-        
-        .noise-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAMAAAAp4XiDAAAAUVBMVEVMaXH///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8GtxmUAAAAG3RSTlNBv/v5/f3g4eHm1NXX2NfY1tXV0dHRyNLKz8vPzaSjMAAAAJNJREFUeNqdzFsKwDAQA0B5/f+nXYNWEtG0JpPFCs6lIWZAt1zJvTggNkbE9fNAgA/Y2fGvWJgP2BnYd8lQOQjBRC01c809eoo0SflO1lR1eQCkGq8f3sFmNfH1TqxTcjxSBt3+B4QrgqAL/0tYASA8/vjl3/8mX5h9cNcASD88t9/8mX8w+sO4AXiPZ8QGHiZPAAAAAElFTkSuQmCC');
-            background-repeat: repeat;
-            opacity: 0.04; 
-            z-index: -1;
-            pointer-events: none;
-        }
-        /* --- End of Background Effects --- */
+        .loader-backdrop.active { display: flex; }
 
-        /* === LOADER FIX === */
         #loader {
-            /* Position it in the center of the viewport */
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            /* Ensure it's on top of all other content */
-            z-index: 50; 
-        }
-        /* --- End Fix --- */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 65; /* keep above backdrop */
+            gap: 0.5rem;  /* space between animation and text */
+            }
 
-        /* --- Loader Animation --- */
-        .animation-container {
-            width: 112px;
-            height: 112px;
-            position: relative;
-        }
+        .animation-container { width: 112px; height: 112px; position: relative; }
+
+        /* Use explicit color instead of missing CSS variable */
         .box1, .box2, .box3 {
-            border: 16px solid var(--tw-colors-accent-teal);
-            box-sizing: border-box;
-            position: absolute;
-            display: block;
+            border: 16px solid var(--accent-teal);
+            box-sizing: border-box; position: absolute; display: block;
         }
+        .box1 { width:112px; height:48px; margin-top:64px; margin-left:0px; animation: anime1 4s infinite ease-in-out; }
+        .box2 { width:48px; height:48px; margin-top:0px; margin-left:0px; animation: anime2 4s infinite ease-in-out; }
+        .box3 { width:48px; height:48px; margin-top:0px; margin-left:64px; animation: anime3 4s infinite ease-in-out; }
 
-        .box1 {
-            width: 112px; height: 48px; margin-top: 64px; margin-left: 0px;
-            animation: anime1 4s 0s forwards ease-in-out infinite;
-        }
-        .box2 {
-            width: 48px; height: 48px; margin-top: 0px; margin-left: 0px;
-            animation: anime2 4s 0s forwards ease-in-out infinite;
-        }
-        .box3 {
-            width: 48px; height: 48px; margin-top: 0px; margin-left: 64px;
-            animation: anime3 4s 0s forwards ease-in-out infinite;
-        }
-        @keyframes anime1 {
-            0% { width: 112px; height: 48px; margin-top: 64px; margin-left: 0px; }
-            12.5% { width: 48px; height: 48px; margin-top: 64px; margin-left: 0px; }
-            25%, 62.5% { width: 48px; height: 48px; margin-top: 64px; margin-left: 0px; }
-            75% { width: 48px; height: 112px; margin-top: 0px; margin-left: 0px; }
-            87.5% { width: 48px; height: 48px; margin-top: 0px; margin-left: 0px; }
-            100% { width: 48px; height: 48px; margin-top: 0px; margin-left: 0px; }
-        }
-        @keyframes anime2 {
-            0% { width: 48px; height: 48px; margin-top: 0px; margin-left: 0px; }
-            37.5% { width: 48px; height: 48px; margin-top: 0px; margin-left: 0px; }
-            50% { width: 112px; height: 48px; margin-top: 0px; margin-left: 0px; }
-            62.5% { width: 48px; height: 48px; margin-top: 0px; margin-left: 64px; }
-            100% { width: 48px; height: 48px; margin-top: 0px; margin-left: 64px; }
-        }
-        @keyframes anime3 {
-            0% { width: 48px; height: 48px; margin-top: 0px; margin-left: 64px; }
-            12.5% { width: 48px; height: 48px; margin-top: 0px; margin-left: 64px; }
-            25% { width: 48px; height: 112px; margin-top: 0px; margin-left: 64px; }
-            37.5% { width: 48px; height: 48px; margin-top: 64px; margin-left: 64px; }
-            75% { width: 48px; height: 48px; margin-top: 64px; margin-left: 64px; }
-            100% { width: 112px; height: 48px; margin-top: 64px; margin-left: 0px; }
-        }
-        /* --- End of Loader Animation --- */
+        @keyframes anime1 { 0%{width:112px;height:48px;margin-top:64px;margin-left:0}12.5%{width:48px;height:48px;margin-top:64px;margin-left:0}25%,62.5%{width:48px;height:48px;margin-top:64px;margin-left:0}75%{width:48px;height:112px;margin-top:0;margin-left:0}87.5%{width:48px;height:48px;margin-top:0;margin-left:0}100%{width:48px;height:48px;margin-top:0;margin-left:0}}
+        @keyframes anime2 { 0%{width:48px;height:48px;margin-top:0;margin-left:0}37.5%{width:48px;height:48px;margin-top:0;margin-left:0}50%{width:112px;height:48px;margin-top:0;margin-left:0}62.5%{width:48px;height:48px;margin-top:0;margin-left:64px}100%{width:48px;height:48px;margin-top:0;margin-left:64px}}
+        @keyframes anime3 { 0%{width:48px;height:48px;margin-top:0;margin-left:64px}12.5%{width:48px;height:48px;margin-top:0;margin-left:64px}25%{width:48px;height:112px;margin-top:0;margin-left:64px}37.5%{width:48px;height:48px;margin-top:64px;margin-left:64px}75%{width:48px;height:48px;margin-top:64px;margin-left:64px}100%{width:112px;height:48px;margin-top:64px;margin-left:0px}}
 
-        /* Style for the collapsible <details> tag */
-        summary {
-            cursor: pointer;
-            font-weight: 600;
-            padding: 8px 0;
-            list-style: none;
-            color: var(--tw-colors-light-text);
-        }
-        summary::-webkit-details-marker { display: none; }
-        summary::before {
-            content: '► ';
-            font-size: 0.8em;
-            margin-right: 8px;
-            transition: transform 0.2s ease;
-        }
-        details[open] summary::before { transform: rotate(90deg); }
-        
-        pre {
-            background-color: #0A0A0A; /* Darker bg for code */
-            padding: 16px;
-            border-radius: 8px;
-            overflow-x: auto;
-            color: #d1d8e1;
-            border: 1px solid var(--tw-colors-border-light);
-        }
+        /* details/summary and pre styling kept as-is but slightly tightened */
+        summary { cursor: pointer; font-weight:600; padding:8px 0; list-style:none; color:var(--tw-colors-light-text); }
+        summary::-webkit-details-marker{display:none} details[open] summary::before{transform:rotate(90deg)}
+        pre{background-color:#0A0A0A;padding:16px;border-radius:8px;overflow-x:auto;color:#d1d8e1;border:1px solid var(--tw-colors-border-light)}
+
+        /* small responsive tweak to ensure content stays under loader backdrop when visible */
+        .no-scroll { overflow: hidden; }
     </style>
 </head>
-
 <body class="text-light-text antialiased min-h-screen font-sans">
-    
-    <!-- HTML for background effects -->
     <div class="noise-overlay"></div>
     <div id="tsparticles"></div>
-    <!-- End of background effects -->
 
-    <!-- Loader Section (now lives at the root) -->
-    <div id="loader" class="hidden flex-col items-center justify-center py-20">
-        <div class="animation-container">
-            <div class="box1"></div>
-            <div class="box2"></div>
-            <div class="box3"></div>
+    <!-- Loader Backdrop (covers whole viewport when .active) -->
+    <div id="loader-backdrop" class="loader-backdrop" aria-hidden="true" role="status" aria-live="polite">
+        <div id="loader" class="flex flex-col items-center justify-center">
+            <div class="animation-container" aria-hidden="true">
+                <div class="box1"></div>
+                <div class="box2"></div>
+                <div class="box3"></div>
+            </div>
+            <p class="mt-8 text-lg text-secondary-text">Analyzing... this may take a moment.</p>
         </div>
-        <p class="mt-8 text-lg text-secondary-text">Analyzing... this may take a moment.</p>
     </div>
 
-    <!-- Wider Layout Container -->
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-        <!-- Header Section with Logo -->
+        <!-- Header, form and rest of UI (same structure as you provided) -->
         <header class="text-center mb-12">
-            <!-- Project Logo -->
             <div class="flex items-center justify-center mb-4">
-                <svg class="w-16 h-16 text-accent-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-4m0 0l4-4m-4 4L10 4m0 16-4-4m4 4v-9.586a1 1 0 00-.293-.707L10.586 9H7m4 4v-9.586a1 1 0 00-.293-.707L10.586 9H7"></path>
-                </svg>
-                <h1 class="text-4xl md:text-5xl font-extrabold text-light-text ml-4">
-                    Repo Profiler
-                </h1>
+                <svg class="w-16 h-16 text-accent-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-4m0 0l4-4m-4 4L10 4m0 16-4-4m4 4v-9.586a1 1 0 00-.293-.707L10.586 9H7m4 4v-9.586a1 1 0 00-.293-.707L10.586 9H7"></path></svg>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-light-text ml-4">Repo Profiler</h1>
             </div>
-            <p class="text-lg text-secondary-text">
-                Get AI-powered health reports and actionable insights for any public GitHub repo.
-            </p>
+            <p class="text-lg text-secondary-text">Get AI-powered health reports and actionable insights for any public GitHub repo.</p>
         </header>
 
-        <!-- Input Section -->
         <main>
-            <!-- Form is now in a blurred card -->
             <form id="analysis-form" class="bg-card-bg/50 backdrop-blur-sm p-6 md:p-8 shadow-2xl rounded-lg border border-border-light">
-                <!-- Tab Buttons -->
                 <div class="flex mb-4 border-b border-border-light">
-                    <button type="button" id="tab-url" class="tab-btn-active pb-2 px-1 border-b-2 border-accent-teal text-light-text font-semibold">
-                        Analyze by URL
-                    </button>
-                    <button type="button" id="tab-owner" class="tab-btn pb-2 px-1 ml-6 text-secondary-text font-medium">
-                        Analyze by Owner/Repo
-                    </button>
+                    <button type="button" id="tab-url" class="tab-btn-active pb-2 px-1 border-b-2 border-accent-teal text-light-text font-semibold">Analyze by URL</button>
+                    <button type="button" id="tab-owner" class="tab-btn pb-2 px-1 ml-6 text-secondary-text font-medium">Analyze by Owner/Repo</button>
                 </div>
-
-                <!-- Input: Analyze by URL (Default) -->
                 <div id="input-url">
-                    <input type="text" id="repo-url"
-                        class="w-full p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal"
-                        placeholder="https: //github.com/fastapi/fastapi">
+                    <input type="text" id="repo-url" class="w-full p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal" placeholder="https://github.com/fastapi/fastapi">
                 </div>
-
-                <!-- Input: Analyze by Owner/Repo (Hidden) -->
                 <div id="input-owner" class="hidden">
                     <div class="flex flex-col md:flex-row gap-4">
-                        <input type="text" id="repo-owner"
-                            class="flex-1 p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal"
-                            placeholder="Owner (e.g., 'psf')">
-                        <input type="text" id="repo-name"
-                            class="flex-1 p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal"
-                            placeholder="Repo Name (e.g., 'requests')">
+                        <input type="text" id="repo-owner" class="flex-1 p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal" placeholder="Owner (e.g., 'psf')">
+                        <input type="text" id="repo-name" class="flex-1 p-4 bg-dark-bg border border-border-light rounded-lg text-lg text-light-text placeholder-secondary-text focus:outline-none focus:ring-2 focus:ring-accent-teal" placeholder="Repo Name (e.g., 'requests')">
                     </div>
                 </div>
-
-                <!-- Submit Button -->
                 <div class="mt-6">
-                    <button type="submit"
-                        class="w-full p-4 bg-accent-teal rounded-lg text-lg font-bold text-dark-bg shadow-lg transition-transform duration-200 hover:bg-accent-dark active:scale-95">
-                        Analyze Repository
-                    </button>
+                    <button type="submit" class="w-full p-4 bg-accent-teal rounded-lg text-lg font-bold text-dark-bg shadow-lg transition-transform duration-200 hover:bg-accent-dark active:scale-95">Analyze Repository</button>
                 </div>
             </form>
-            
-            <!-- Error Box Section (Moved outside the loader) -->
-            <div id="error-box" class="hidden mt-8 p-4 bg-error-bg border border-error-bg text-error-text rounded-lg">
-                <!-- Error message will be injected here -->
-            </div>
 
-            <!-- Results Section -->
-            <div id="results" class="hidden mt-12">
-                
-                <h2 class="text-3xl font-bold text-light-text mb-8" id="report-title">
-                    Analysis Report for...
-                </h2>
+            <div id="error-box" class="hidden mt-8 p-4 bg-error-bg border border-error-bg text-error-text rounded-lg"></div>
 
-                <!-- Two-Column Layout -->
+            <div id="results" class="hidden mt-12"> <!-- results markup unchanged -->
+                <h2 class="text-3xl font-bold text-light-text mb-8" id="report-title">Analysis Report for...</h2>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <!-- Left Column (Span 2) -->
                     <div class="lg:col-span-2 space-y-8">
-                        <!-- AI Summary Card -->
                         <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md">
                             <h3 class="text-xl font-bold text-light-text mb-4">AI Summary & Rating</h3>
-                            <div id="summary-content" class="text-secondary-text leading-relaxed whitespace-pre-wrap">
-                                <!-- AI summary will be injected here -->
-                            </div>
+                            <div id="summary-content" class="text-secondary-text leading-relaxed whitespace-pre-wrap"></div>
                         </div>
-
-                        <!-- Raw JSON -->
                         <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md">
                             <details>
                                 <summary class="text-lg text-light-text">Raw JSON Output</summary>
-                                <div class="pt-4 pb-2">
-                                    <pre id="raw-json"></pre>
-                                </div>
+                                <div class="pt-4 pb-2"><pre id="raw-json"></pre></div>
                             </details>
                         </div>
                     </div>
-                    
-                    <!-- Right Column (Span 1) -->
                     <div class="lg:col-span-1 space-y-8">
-                        <!-- Key Metrics Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4">
-                            <!-- Stars -->
-                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105">
-                                <div class="text-sm font-medium text-secondary-text mb-1">Stars</div>
-                                <div id="stat-stars" class="text-4xl font-extrabold text-light-text">...</div>
-                            </div>
-                            <!-- Forks -->
-                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105">
-                                <div class="text-sm font-medium text-secondary-text mb-1">Forks</div>
-                                <div id="stat-forks" class="text-4xl font-extrabold text-light-text">...</div>
-                            </div>
-                            <!-- Health Score -->
-                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105">
-                                <div class="text-sm font-medium text-secondary-text mb-1">Health Score</div>
-                                <div id="stat-health" class="text-4xl font-extrabold text-light-text">...</div>
-                            </div>
+                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105"><div class="text-sm font-medium text-secondary-text mb-1">Stars</div><div id="stat-stars" class="text-4xl font-extrabold text-light-text">...</div></div>
+                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105"><div class="text-sm font-medium text-secondary-text mb-1">Forks</div><div id="stat-forks" class="text-4xl font-extrabold text-light-text">...</div></div>
+                            <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md transition-transform hover:scale-105"><div class="text-sm font-medium text-secondary-text mb-1">Health Score</div><div id="stat-health" class="text-4xl font-extrabold text-light-text">...</div></div>
                         </div>
-
-                        <!-- Collapsible Details -->
                         <div class="bg-card-bg/50 border border-border-light p-6 rounded-lg shadow-md divide-y divide-border-light">
-                            <!-- Activity Details -->
-                            <details open> <!-- Default open -->
-                                <summary class="text-lg text-light-text">Activity Trends</summary>
-                                <div class="pt-4 pb-2 text-secondary-text space-y-2">
-                                    <p>Commits (avg): <strong id="activity-commits" class="text-light-text">...</strong></p>
-                                    <p>New Issues (30d): <strong id="activity-new" class="text-light-text">...</strong></p>
-                                    <p>Closed Issues (30d): <strong id="activity-closed" class="text-light-text">...</strong></p>
-                                    <p>Last Push: <strong id="activity-push" class="text-light-text">...</strong></p>
-                                </div>
-                            </details>
-                            
-                            <!-- Issue Details -->
-                            <details open> <!-- Default open -->
-                                <summary class="text-lg text-light-text">Issue Health</summary>
-                                <div class="pt-4 pb-2 text-secondary-text space-y-2">
-                                    <p>Open Issues: <strong id="issues-open" class="text-light-text">...</strong></p>
-                                    <p>Stale Issues (>90d): <strong id="issues-stale" class="text-light-text">...</strong></p>
-                                    <p>Bug Reports: <strong id="issues-bugs" class="text-light-text">...</strong></p>
-                                </div>
-                            </details>
-
-                            <!-- Contributor Details -->
-                            <details>
-                                <summary class="text-lg text-light-text">Top 5 Contributors</summary>
-                                <ul id="contrib-list" class="pt-4 pb-2 text-secondary-text list-disc list-inside space-y-2">
-                                    <!-- Contributor list will be injected here -->
-                                </ul>
-                            </details>
-
-                            <!-- Dependency Details -->
-                            <details>
-                                <summary class="text-lg text-light-text">Dependencies</summary>
-                                <div id="dep-list" class="pt-4 pb-2 text-secondary-text space-y-4">
-                                    <!-- Dependency list will be injected here -->
-                                </div>
-                            </details>
+                            <details open><summary class="text-lg text-light-text">Activity Trends</summary><div class="pt-4 pb-2 text-secondary-text space-y-2"><p>Commits (avg): <strong id="activity-commits" class="text-light-text">...</strong></p><p>New Issues (30d): <strong id="activity-new" class="text-light-text">...</strong></p><p>Closed Issues (30d): <strong id="activity-closed" class="text-light-text">...</strong></p><p>Last Push: <strong id="activity-push" class="text-light-text">...</strong></p></div></details>
+                            <details open><summary class="text-lg text-light-text">Issue Health</summary><div class="pt-4 pb-2 text-secondary-text space-y-2"><p>Open Issues: <strong id="issues-open" class="text-light-text">...</strong></p><p>Stale Issues (>90d): <strong id="issues-stale" class="text-light-text">...</strong></p><p>Bug Reports: <strong id="issues-bugs" class="text-light-text">...</strong></p></div></details>
+                            <details><summary class="text-lg text-light-text">Top 5 Contributors</summary><ul id="contrib-list" class="pt-4 pb-2 text-secondary-text list-disc list-inside space-y-2"></ul></details>
+                            <details><summary class="text-lg text-light-text">Dependencies</summary><div id="dep-list" class="pt-4 pb-2 text-secondary-text space-y-4"></div></details>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- NEW FOOTER SECTION -->
         <footer class="text-center mt-12 py-8 border-t border-border-light">
-            <a href="https://github.com/SiddharthBayapureddy/repo-profiler" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center text-secondary-text hover:text-accent-teal transition-colors duration-200">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.03-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.379.202 2.398.1 2.65.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" />
-                </svg>
+            <a href="https://github.com/SiddharthBayapureddy/repo-profiler" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-secondary-text hover:text-accent-teal transition-colors duration-200">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.03-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.379.202 2.398.1 2.65.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
                 <span class="ml-2 font-medium">View Project on GitHub</span>
             </a>
         </footer>
-        <!-- END FOOTER SECTION -->
+    </div>
 
-    </div> <!-- This is the closing tag for max-w-7xl -->
-
-    <!-- 5. JavaScript Logic -->
-    
-    <!-- NEW: tsParticles Library from your layout.html -->
     <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.bundle.min.js"></script>
-
     <script>
-        // === Get All DOM Elements ===
         const analysisForm = document.getElementById('analysis-form');
-        const loader = document.getElementById('loader');
+        const loaderBackdrop = document.getElementById('loader-backdrop');
         const results = document.getElementById('results');
         const errorBox = document.getElementById('error-box');
-
-        // Tabs
         const tabUrlBtn = document.getElementById('tab-url');
         const tabOwnerBtn = document.getElementById('tab-owner');
         const inputUrlDiv = document.getElementById('input-url');
         const inputOwnerDiv = document.getElementById('input-owner');
-
-        // Inputs
         const urlInput = document.getElementById('repo-url');
         const ownerInput = document.getElementById('repo-owner');
         const repoInput = document.getElementById('repo-name');
-
         let currentAnalysisMode = 'url';
 
-        // === Tab Switching Logic ===
         tabUrlBtn.addEventListener('click', () => {
             currentAnalysisMode = 'url';
-            inputUrlDiv.classList.remove('hidden');
-            inputOwnerDiv.classList.add('hidden');
-            
+            inputUrlDiv.classList.remove('hidden'); inputOwnerDiv.classList.add('hidden');
             tabUrlBtn.className = 'tab-btn-active pb-2 px-1 border-b-2 border-accent-teal text-light-text font-semibold';
             tabOwnerBtn.className = 'tab-btn pb-2 px-1 ml-6 text-secondary-text font-medium';
         });
-
         tabOwnerBtn.addEventListener('click', () => {
             currentAnalysisMode = 'owner';
-            inputUrlDiv.classList.add('hidden');
-            inputOwnerDiv.classList.remove('hidden');
-            
+            inputUrlDiv.classList.add('hidden'); inputOwnerDiv.classList.remove('hidden');
             tabOwnerBtn.className = 'tab-btn-active pb-2 px-1 ml-6 border-b-2 border-accent-teal text-light-text font-semibold';
             tabUrlBtn.className = 'tab-btn pb-2 px-1 text-secondary-text font-medium';
         });
 
-        // === Main Form Submission ===
-        analysisForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-
-            let githubUrl = '';
-            if (currentAnalysisMode === 'url') {
-                githubUrl = urlInput.value;
-            } else {
-                if (ownerInput.value && repoInput.value) {
-                    githubUrl = `https://github.com/${ownerInput.value}/${repoInput.value}`;
-                }
-            }
-
-            if (!githubUrl) {
-                displayError("Please enter a valid URL or Owner/Repo pair.");
-                return;
-            }
-
-            // --- LOADER FIX: Toggle classes correctly ---
-            loader.classList.remove('hidden');
-            loader.classList.add('flex'); // Make sure it's flex
-            results.classList.add('hidden');
-            errorBox.classList.add('hidden');
-            // --- END LOADER FIX ---
-
-            try {
-                const response = await fetch('http://127.0.0.1:8000/analyze/', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ repo_url: githubUrl })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || `HTTP Error ${response.status}`);
-                }
-                displayResults(data);
-
-            } catch (error) {
-                console.error("Analysis Error:", error);
-                displayError(error.message);
-            } finally {
-                // --- LOADER FIX: Toggle classes correctly ---
-                loader.classList.add('hidden');
-                loader.classList.remove('flex');
-                // --- END LOADER FIX ---
-            }
-        });
-
-        function displayError(message) {
-            errorBox.textContent = `Error: ${message}`;
-            errorBox.classList.remove('hidden');
-            results.classList.add('hidden');
+        function showLoader() {
+            loaderBackdrop.classList.add('active');
+            loaderBackdrop.setAttribute('aria-hidden', 'false');
+            document.documentElement.classList.add('no-scroll'); // prevent page scroll while loading
+        }
+        function hideLoader() {
+            loaderBackdrop.classList.remove('active');
+            loaderBackdrop.setAttribute('aria-hidden', 'true');
+            document.documentElement.classList.remove('no-scroll');
         }
 
+        analysisForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            let githubUrl = '';
+            if (currentAnalysisMode === 'url') githubUrl = urlInput.value;
+            else if (ownerInput.value && repoInput.value) githubUrl = `https://github.com/${ownerInput.value}/${repoInput.value}`;
+            if (!githubUrl) { displayError("Please enter a valid URL or Owner/Repo pair."); return; }
+
+            showLoader(); results.classList.add('hidden'); errorBox.classList.add('hidden');
+            try {
+                const response = await fetch('/analyze/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ repo_url: githubUrl }) });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || `HTTP Error ${response.status}`);
+                displayResults(data);
+            } catch (error) {
+                console.error('Analysis Error:', error);
+                displayError(error.message);
+            } finally { hideLoader(); }
+        });
+
+        function displayError(message) { errorBox.textContent = `Error: ${message}`; errorBox.classList.remove('hidden'); results.classList.add('hidden'); }
+
         function displayResults(data) {
-            results.classList.remove('hidden');
-            errorBox.classList.add('hidden');
-
+            results.classList.remove('hidden'); errorBox.classList.add('hidden');
             document.getElementById('report-title').textContent = `Analysis for ${data.repo_name}`;
-
-            // --- Stat Cards ---
             document.getElementById('stat-stars').textContent = data.stars.toLocaleString();
             document.getElementById('stat-forks').textContent = data.forks.toLocaleString();
-            
             const healthEl = document.getElementById('stat-health');
             healthEl.textContent = `${data.health_score} / 100`;
-            // Clear old color classes
-            healthEl.classList.remove('text-accent-teal', 'text-yellow-500', 'text-red-500');
-            
-            // Add new color based on score
-            if (data.health_score >= 80) {
-                healthEl.classList.add('text-accent-teal'); // Our "good" teal
-            } else if (data.health_score >= 50) {
-                healthEl.classList.add('text-yellow-500'); // Tailwind's default yellow
-            } else {
-                healthEl.classList.add('text-red-500'); // Tailwind's default red
-            }
-
-            // --- AI Summary ---
+            healthEl.classList.remove('text-accent-teal','text-yellow-500','text-red-500');
+            if (data.health_score >= 80) healthEl.classList.add('text-accent-teal'); else if (data.health_score >= 50) healthEl.classList.add('text-yellow-500'); else healthEl.classList.add('text-red-500');
             document.getElementById('summary-content').textContent = data.summary;
-
-            // --- Activity Details ---
             document.getElementById('activity-commits').textContent = data.activity.commits_per_week_avg.toLocaleString();
             document.getElementById('activity-new').textContent = data.activity.new_issues.toLocaleString();
             document.getElementById('activity-closed').textContent = data.activity.closed_issues.toLocaleString();
             document.getElementById('activity-push').textContent = new Date(data.last_updated).toLocaleDateString();
-
-            // --- Issue Details ---
             document.getElementById('issues-open').textContent = data.issues.open_issues.toLocaleString();
             document.getElementById('issues-stale').textContent = data.issues.stale_issues.toLocaleString();
             document.getElementById('issues-bugs').textContent = data.issues.bug_issues.toLocaleString();
-            
-            // --- Contributor List ---
-            const contribList = document.getElementById('contrib-list');
-            contribList.innerHTML = '';
-            if (data.top_contributor.length > 0) {
-                data.top_contributor.forEach(c => {
-                    const li = document.createElement('li');
-                    li.textContent = `${c.username} (${c.commits.toLocaleString()} commits)`;
-                    contribList.appendChild(li);
-                });
-            } else {
-                contribList.innerHTML = '<li>No contributor data found.</li>';
-            }
-
-            // --- Dependency List ---
-            const depList = document.getElementById('dep-list');
-            depList.innerHTML = ''; 
+            const contribList = document.getElementById('contrib-list'); contribList.innerHTML = '';
+            if (data.top_contributor.length > 0) { data.top_contributor.forEach(c => { const li = document.createElement('li'); li.textContent = `${c.username} (${c.commits.toLocaleString()} commits)`; contribList.appendChild(li); }); }
+            else contribList.innerHTML = '<li>No contributor data found.</li>';
+            const depList = document.getElementById('dep-list'); depList.innerHTML = '';
             if (data.dependencies && data.dependencies.length > 0) {
                 data.dependencies.forEach(report => {
-                    const fileTitle = document.createElement('h4');
-                    fileTitle.className = 'font-semibold text-light-text';
-                    fileTitle.textContent = report.file;
-                    depList.appendChild(fileTitle);
-
-                    const ul = document.createElement('ul');
-                    ul.className = 'list-disc list-inside space-y-1 pl-4'; // Fixed typo here
-                    
-                    report.dependencies.forEach(pkg => {
-                        const li = document.createElement('li');
-                        li.textContent = `${pkg.name} (${pkg.version})`;
-                        ul.appendChild(li);
-                    });
-                    
+                    const fileTitle = document.createElement('h4'); fileTitle.className = 'font-semibold text-light-text'; fileTitle.textContent = report.file; depList.appendChild(fileTitle);
+                    const ul = document.createElement('ul'); ul.className = 'list-disc list-inside space-y-1 pl-4';
+                    report.dependencies.forEach(pkg => { const li = document.createElement('li'); li.textContent = `${pkg.name} (${pkg.version})`; ul.appendChild(li); });
                     depList.appendChild(ul);
                 });
-            } else {
-                depList.innerHTML = '<p>No common dependency files (like requirements.txt or package.json) were found.</p>';
-            }
-
-            // --- Raw JSON ---
+            } else { depList.innerHTML = '<p>No common dependency files (like requirements.txt or package.json) were found.</p>'; }
             document.getElementById('raw-json').textContent = JSON.stringify(data, null, 2);
         }
 
-        // --- REMOVED Spotlight Effect ---
-
-        // --- NEW: tsParticles Initialization from your layout.html ---
         document.addEventListener('DOMContentLoaded', () => {
             (async () => {
                 await tsParticles.load("tsparticles", {
                     fullScreen: { enable: true, zIndex: -3 },
-                    particles: {
-                        number: { value: 60, density: { enable: true, value_area: 800 } },
-                        color: { value: "#00bfa5" }, // <-- Your reference teal
-                        shape: { type: "circle" },
-                        opacity: {
-                            value: 0.5,
-                            random: true,
-                            anim: { enable: true, speed: 0.5, opacity_min: 0.1, sync: false }
-                        },
-                        size: { value: 2, random: true, anim: { enable: false } },
-                        links: {
-                            enable: true,
-                            distance: 120,
-                            color: "#00bfa5", // <-- Your reference teal
-                            opacity: 0.2,
-                            width: 1
-                        },
-                        move: {
-                            enable: true,
-                            speed: 1,
-                            direction: "top",
-                            straight: true,
-                            out_mode: "out",
-                            bounce: false
-                        }
-                    },
-                    interactivity: {
-                        detect_on: "window",
-                        events: {
-                            onHover: { enable: true, mode: "bubble" },
-                            onClick: { enable: true, mode: "push" },
-                            resize: true
-                        },
-                        modes: {
-                            bubble: { distance: 200, size: 4, duration: 2, opacity: 0.8 },
-                            push: { quantity: 4 }
-                        }
-                    },
-                    detectRetina: true
+                    particles: { number:{value:60,density:{enable:true,value_area:800}}, color:{value:"#00bfa5"}, shape:{type:"circle"}, opacity:{value:0.5,random:true,anim:{enable:true,speed:0.5,opacity_min:0.1,sync:false}}, size:{value:2,random:true,anim:{enable:false}}, links:{enable:true,distance:120,color:"#00bfa5",opacity:0.2,width:1}, move:{enable:true,speed:1,direction:"top",straight:true,out_mode:"out",bounce:false}},
+                    interactivity:{detect_on:"window",events:{onHover:{enable:true,mode:"bubble"},onClick:{enable:true,mode:"push"},resize:true}, modes:{bubble:{distance:200,size:4,duration:2,opacity:0.8}, push:{quantity:4}}}, detectRetina:true
                 });
             })();
         });
