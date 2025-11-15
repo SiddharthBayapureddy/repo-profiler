@@ -225,7 +225,7 @@
 
             showLoader(); results.classList.add('hidden'); errorBox.classList.add('hidden');
             try {
-                const response = await fetch('/analyze/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ repo_url: githubUrl }) });
+                const response = await fetch('/analyze', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ repo_url: githubUrl }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.detail || `HTTP Error ${response.status}`);
                 displayResults(data);

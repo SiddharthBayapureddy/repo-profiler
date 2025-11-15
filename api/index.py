@@ -38,7 +38,7 @@ def get_repo_name_from_url(url: str) -> str:
 
 
 
-@app.post("/analyze/", response_model=Repo_Output)
+@app.post("/analyze", response_model=Repo_Output)
 async def analyze_repo(repo_input: Repo_Input):
     
     try:
