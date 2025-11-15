@@ -3,12 +3,27 @@ import time
 import jwt  # JSON Web Tokens
 import httpx
 from dotenv import load_dotenv
+import base64
 
 load_dotenv()
 
 GITHUB_APP_ID = os.getenv("GITHUB_APP_ID")
 GITHUB_INSTALLATION_ID = os.getenv("GITHUB_INSTALLATION_ID")
-GITHUB_PRIVATE_KEY = os.getenv("GITHUB_PRIVATE_KEY")
+GITHUB_PRIVATE_KEY_MULTI = os.getenv("GITHUB_PRIVATE_KEY")
+GITHUB_PRIVATE_KEY_B64 = os.getenv("GITHUB_PRIVATE_KEY_B64")
+
+if GITHUB_PRIVATE_KEY_B64:
+    print("Found Base64 private key. Decoding for Vercel.")
+    try:
+        GITHUB_PRIVATE_KEY = base64.b64decode(GITHUB_PRIVATE_KEY_B64).decode('utf-8')
+    except Exception as e:
+        print(f"FAILED to decode Base64 private key: {e}")
+        raise
+elif GITHUB_PRIVATE_KEY_MULTI:
+    print("Found multi-line private key. Running locally.")
+    GITHUB_PRIVATE_KEY = GITHUB_PRIVATE_KEY_MULTI
+else:
+    raise ValueError("Missing GitHub private key. Set GITHUB_PRIVATE_KEY (local) or GITHUB_PRIVATE_KEY_B64 (Vercel).")
 
 # Check if all required variables are loaded
 if not GITHUB_APP_ID or not GITHUB_INSTALLATION_ID or not GITHUB_PRIVATE_KEY:
